@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
-from agents import Agent, Runner, function_tool, ModelSettings
+from agents import Agent, Runner, function_tool, ModelSettings, SQLiteSession
 
 from functools import lru_cache
 
@@ -16,6 +16,8 @@ from tools import (
     get_balance_sheet,
     cash_flow_statement
 )
+
+global_session = SQLiteSession("test_conversation")
 
 
 async def _agent_builder(query):
@@ -47,6 +49,6 @@ async def _agent_builder(query):
         )
     )
 
-    result = await Runner.run(agent, query)
+    result = await Runner.run(agent, query, session = global_session)
 
     return result.final_output
