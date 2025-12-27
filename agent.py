@@ -25,7 +25,7 @@ async def _agent_builder(query):
 
     agent = Agent(
         name = "Data Finder",
-        # model = 'gpt-4o-mini',
+        model = 'gpt-4o-mini',
         instructions = f"""
         You are a stock analyser and your job is to understand the {query} and then use the tools available at your disposal 
         to answer to the user. 
