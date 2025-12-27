@@ -2,6 +2,13 @@ import os
 import requests
 from functools import lru_cache
 from agents import function_tool
+from datetime import datetime, timedelta
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
+load_dotenv()
+client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+
 
 # API setup
 stock_api = os.getenv("ALPHA_VANTAGE_API_KEY")
@@ -346,3 +353,101 @@ def _price_data(ticker: str) -> str:
     latest_price = close_price[0]
 
     return latest_price
+
+
+@function_tool
+def earnings_analysis(ticker: str) -> str:
+    """ 
+    Based on the ticker, you will find a 10-12 point analysis related to the latest earnings report. 
+    You can use it in case the user wants to do some kind of qualitative analysis
+    """
+
+    return _earnings_analysis(ticker)
+
+@lru_cache
+def _earnings_analysis(ticker: str) -> str:
+    """
+    Based on the ticker, you will find a 10-12 point analysis related to the latest earnings report. 
+    You can use it in case the user wants to do some kind of qualitative analysis
+    """
+
+    final_transcript = []
+
+    final_quarter = []
+
+    while final_transcript == []:
+        today = datetime.now()
+    
+        year = today.year
+        month = today.month
+    
+        if month in [1,2,3]:
+            quarter = 'Q4'
+            year -= 1
+        elif month in [4,5,6]:
+            quarter = 'Q1'
+        elif month in [7,8,9]:
+            quarter = 'Q2'
+        else:
+            quarter = 'Q3'
+    
+        final = f'{year}{quarter}'
+    
+        params = {
+            "function": "EARNINGS_CALL_TRANSCRIPT",
+            "symbol": ticker,
+            "apikey": stock_api,
+            "quarter": final
+        }
+
+        response = requests.get(url, params)
+
+        final_json = response.json()
+
+        transcript = final_json.get('transcript')
+
+        quarter = final_json.get('quarter')
+
+        final_transcript.append(transcript)
+
+        final_quarter.append(quarter)
+
+    
+    response = client.chat.completions.create(
+        model = "gpt-4o-mini",
+        messages = [
+            {"role": "system", "content": f""" 
+           You will be given the full earnings call transcript in {final_transcript}.
+
+            Your task is to extract **7–10 investor-relevant insights** strictly based on what 
+            **Apple management said** in the transcript.
+            
+            Rules you MUST follow:
+            1. Use ONLY information explicitly stated by Apple executives (CEO, CFO, or Investor Relations).  
+               Do NOT include analyst opinions, assumptions, or external interpretation.
+            2. Each point must represent a **distinct insight**, not a restatement of another point.
+            3. For every point, clearly mention **who said it** (name + role).
+            4. Do NOT use generic phrases such as “strong performance”, “positive outlook”, or “solid results” 
+            unless backed by specific data or commentary.
+            5. Each point must explain **why this matters to a long-term investor** 
+            (growth, margins, cash flow, competitive position, or strategic direction).
+            6. Prefer **synthesis over repetition** — combine numbers with management commentary where relevant.
+            7. Do NOT introduce any facts, estimates, or forward views not explicitly stated in the transcript.
+            
+            Output format:
+            - Heading: Analysis of the earnings call ({final_quarter})
+            - Numbered list (7–10 points)
+            - 2–4 sentences per point
+            - End each point with: *(Source: Name, Title)*
+            
+            Tone:
+            - Analytical
+            - Investor-oriented
+            - Neutral and factual
+
+            Don't only include positive or negative points, try to include both
+            """}
+        ], temperature = 0.3
+    )
+
+    return response.choices[0].message.content

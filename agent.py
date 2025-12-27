@@ -14,7 +14,8 @@ from tools import (
     price_data,
     get_income_statement,
     get_balance_sheet,
-    cash_flow_statement
+    cash_flow_statement,
+    earnings_analysis
 )
 
 global_session = SQLiteSession("test_conversation")
@@ -34,6 +35,15 @@ async def _agent_builder(query):
 
         It is recommended you use tables, if you're doing any comparison either between 2 or more companies or you're 
         showing the data of more than 1 year. 
+
+        You can use the {earnings_analysis} tool in case the user wants to know what happened in the latest earnings call of a particular
+        company.
+
+        However, you should always try to back it up with financial data first. 
+        
+        EXCEPTION:
+        If the user is specifically asking to summarise the earning call data you are supposed to simply just print out
+        the output you're getting from {earnings_analysis}.
         """,
         tools = [
             price_data,
@@ -41,6 +51,7 @@ async def _agent_builder(query):
             find_ticker,
             get_balance_sheet,
             get_income_statement,
+            earnings_analysis
         ],
         model_settings = ModelSettings(
             tool_choice = "auto",
