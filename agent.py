@@ -34,7 +34,13 @@ async def _agent_builder(query):
         the user query. 
 
         It is recommended you use tables, if you're doing any comparison either between 2 or more companies or you're 
-        showing the data of more than 1 year. 
+        showing the data of more than 1 year.
+
+        In the tools you are now getting annual and quarterly information for {get_income_statement} & {get_balance_sheet}.
+
+        You can use both to do your analysis now. 
+        
+        Quarterly data is for the last 8 quarters!
 
         You can use the {earnings_analysis} tool in case the user wants to know what happened in the latest earnings call of a particular
         company.

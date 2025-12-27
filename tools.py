@@ -117,10 +117,14 @@ def _get_income_statement(ticker: str) -> str:
 
     annual_data = income_statement_data.get('annualReports')
 
-    filtered_data = []
+    quarterly_data = income_statement_data.get('quarterlyReports')
+
+    filtered_data_annual = []
+
+    filtered_data_quarterly = []
 
     for report in annual_data:
-        filtered_data.append({
+        filtered_data_annual.append({
             'fiscalDateEnding': report.get('fiscalDateEnding'),
             'grossProfit': report.get('grossProfit'),
             'totalRevenue': report.get('totalRevenue'),
@@ -140,8 +144,33 @@ def _get_income_statement(ticker: str) -> str:
             'netIncome': report.get('netIncome'),
         })
 
-    return filtered_data
+    for report_quarterly in quarterly_data:
+        filtered_data_quarterly.append({
+            'fiscalDateEnding': report_quarterly.get('fiscalDateEnding'),
+            'grossProfit': report_quarterly.get('grossProfit'),
+            'totalRevenue': report_quarterly.get('totalRevenue'),
+            'costOfRevenue': report_quarterly.get('costOfRevenue'),
+            'costofGoodsAndServicesSold': report_quarterly.get('costofGoodsAndServicesSold'),
+            'operatingIncome': report_quarterly.get('operatingIncome'),
+            'operatingExpenses': report_quarterly.get('operatingExpenses'),
+            'researchAndDevelopment': report_quarterly.get('researchAndDevelopment'),
+            'sellingGeneralAndAdministrative': report_quarterly.get('sellingGeneralAndAdministrative'),
+            'netInterestIncome': report_quarterly.get('netInterestIncome'),
+            'interestIncome': report_quarterly.get('interestIncome'),
+            'depreciationAndAmortization': report_quarterly.get('depreciationAndAmortization'),
+            'incomeBeforeTax': report_quarterly.get('incomeBeforeTax'),
+            'incomeTaxExpense': report_quarterly.get('incomeTaxExpense'),
+            'ebit': report_quarterly.get('ebit'),
+            'ebitda': report_quarterly.get('ebitda'),
+            'netIncome': report_quarterly.get('netIncome'),
+        })
 
+    final_data = {
+        "annual_data": filtered_data_annual,
+        "quarterly_data": filtered_data_quarterly[:8]
+    }
+
+    return final_data
 
 @function_tool
 def get_balance_sheet(ticker: str) -> str:
@@ -199,10 +228,14 @@ def _get_balance_sheet(ticker: str) -> str:
 
     annual_data = balance_sheet_data.get('annualReports')
 
-    filtered_data = []
+    quarterly_data = balance_sheet_data.get('quarterlyReports')
+
+    filtered_data_annual = []
+
+    filtered_data_quarterly = []
 
     for report in annual_data:
-        filtered_data.append({
+        filtered_data_annual.append({
             'fiscalDateEnding': report.get('fiscalDateEnding'),
             'totalAssets': report.get('totalAssets'),
             'totalCurrentAssets': report.get('totalCurrentAssets'),
@@ -219,7 +252,33 @@ def _get_balance_sheet(ticker: str) -> str:
             'retainedEarnings': report.get('retainedEarnings'),
         })
 
-    return filtered_data
+    for report_quarterly in quarterly_data:
+        filtered_data_quarterly.append({
+            'fiscalDateEnding': report_quarterly.get('fiscalDateEnding'),
+            'totalAssets': report_quarterly.get('totalAssets'),
+            'totalCurrentAssets': report_quarterly.get('totalCurrentAssets'),
+            'cashAndCashEquivalentsAtCarryingValue': report_quarterly.get('cashAndCashEquivalentsAtCarryingValue'),
+            'inventory': report_quarterly.get('inventory'),
+            'totalNonCurrentAssets': report_quarterly.get('totalNonCurrentAssets'),
+            'accumulatedDepreciationAmortizationPPE': report_quarterly.get('accumulatedDepreciationAmortizationPPE'),
+            'sellingGeneralAndAdministrative': report_quarterly.get('sellingGeneralAndAdministrative'),
+            'totalLiabilities': report_quarterly.get('totalLiabilities'),
+            'interestIncome': report_quarterly.get('interestIncome'),
+            'totalCurrentLiabilities': report_quarterly.get('totalCurrentLiabilities'),
+            'currentLongTermDebt': report_quarterly.get('currentLongTermDebt'),
+            'totalShareholderEquity': report_quarterly.get('totalShareholderEquity'),
+            'retainedEarnings': report_quarterly.get('retainedEarnings'),
+        })
+
+
+    final_data = {
+        "annual_data": filtered_data_annual,
+        "quarterly_data": filtered_data_quarterly[:8]
+    }
+
+    
+
+    return final_data
 
 
 @function_tool
