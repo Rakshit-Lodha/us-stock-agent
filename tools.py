@@ -364,7 +364,7 @@ def earnings_analysis(ticker: str) -> str:
 
     return _earnings_analysis(ticker)
 
-
+@lru_cache
 def _earnings_analysis(ticker: str) -> str:
     """
     Based on the ticker, you will find a 10-12 point analysis related to the latest earnings report. 
