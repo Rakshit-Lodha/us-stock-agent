@@ -18,9 +18,10 @@ balance sheets, cash flow, and current prices to provide insights.
 
 # Example queries
 st.markdown("**Try asking:**")
-st.markdown("- *Give me details about tesla?*")
+st.markdown("- *What happened in the latest earnings call of Tesla?*")
 st.markdown("- *Compare Apple and Microsoft*")
 st.markdown("- *What's the financial health of Alphabet Inc?*")
+st.markdown("- *Map the latest quarter performance with what was said in the latest earnings call for Microsoft?*")
 
 st.divider()
 

@@ -1,6 +1,6 @@
-# AI Stock Analysis Agent
+# AI Stock Analysis Agent V1.1
 
-An intelligent stock analysis system powered by GPT-4.1 that provides comprehensive financial insights by analyzing real-time data from Alpha Vantage API.
+An intelligent stock analysis system that provides comprehensive financial insights by analyzing real-time data from Alpha Vantage API.
 
 🚀 **[Live Demo](https://us-stock-agent.streamlit.app/)**
 
@@ -16,22 +16,26 @@ Built as a demonstration of production-grade AI agent development, combining lar
 
 ## Features
 
-### ✅ Comprehensive Financial Analysis
+### Comprehensive Financial Analysis
 - **Income Statements**: Revenue, profitability, operating expenses, EBITDA
 - **Balance Sheets**: Assets, liabilities, equity, cash reserves
 - **Cash Flow**: Operating cash flow, investing activities, financing activities
 - **Current Pricing**: Real-time stock prices and trading data
 
-### ✅ Multi-Stock Comparison
+### Quarterly Earnings Call Analysis
+- Find out the summary from the latest earnings call
+
+### Multi-Stock Comparison
 - Side-by-side financial comparisons with formatted tables
 - Growth trend analysis across multiple companies
 - Risk/reward profiling for investment decisions
 
-### ✅ Intelligent Agent Architecture
+### Intelligent Agent Architecture
 - Autonomous tool selection based on query type
 - Multi-step reasoning for complex questions
 - Natural language understanding of investment queries
 - Structured output with tables, sections, and summaries
+- Built in memory per chat session
 
 ---
 
@@ -193,8 +197,6 @@ Deployed on Streamlit Cloud with environment variables configured in secrets man
 ### Current Limitations
 - **Data scope**: US stocks only (Alpha Vantage constraint)
 - **Rate limits**: 25 API calls/day on free tier (5-7 unique stocks)
-- **Annual data only**: Currently shows annual financials (quarterly coming in V1.1)
-- **No historical context**: Single point-in-time analysis (news integration coming in V1.1)
 
 ### Important Disclaimer
 ⚠️ **This is an AI-powered analysis tool for educational purposes only, not financial advice.**
