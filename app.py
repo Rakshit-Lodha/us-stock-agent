@@ -86,6 +86,8 @@ with tab2:
             with st.spinner("Analysing stock data..."):
                 result_speech = asyncio.run(voice_agent_builder(query_text))
 
+                st.markdown(result_speech)
+
                 st.success("Stock analysis complete")
             
                 with st.spinner("Generating a voice response..."):
@@ -97,11 +99,15 @@ with tab2:
                         when explaining the {input} to the user"""
                     )
 
-                    audio_bytes = speech_response.content
+                    speech_response.stream_to_file("response_audio.mp3")
 
-                    st.audio(audio_bytes, format = "audio/mp3")
+                    # st.audio(audio_bytes, format = "audio/mp3")
 
                     st.success("Voice response complete!")
+
+                    with open("response_audio.mp3","rb") as audio_file_1:
+                        audio_data = audio_file_1.read()
+                        st.audio(audio_data, format = "audio/mpeg")
 
 
 
