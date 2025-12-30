@@ -1,6 +1,10 @@
 import streamlit as st
 import asyncio
-from agent import _agent_builder  # Import your agent function
+from agent import _agent_builder
+from agent import voice_agent_builder
+import os
+from openai import OpenAI
+client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
 
 # Page config
 st.set_page_config(
@@ -12,7 +16,7 @@ st.set_page_config(
 # Title and description
 st.title("📈 AI Stock Analysis Agent")
 st.markdown("""
-Ask me anything about stocks! I'll analyze financial data including income statements, 
+Ask me anything about stocks! I'll analyze financial data including income statements,
 balance sheets, cash flow, and current prices to provide insights.
 """)
 
@@ -39,18 +43,52 @@ if st.button("Analyze", type="primary", use_container_width=True):
             try:
                 # Run async function in sync context
                 result = asyncio.run(_agent_builder(query))
-                
+
                 # Display result
                 st.markdown("### Analysis")
                 st.markdown(result)
-                
+
                 st.success("Analysis complete!")
-                
+
             except Exception as e:
                 st.error(f"Error: {str(e)}")
                 st.info("Please try rephrasing your question or try a different stock.")
     else:
         st.warning("Please enter a question")
+
+
+audio_value = st.audio_input("Record your question")
+
+if audio_value:
+    st.audio(audio_value)
+
+    with open("temp_recording.wav","wb") as f:
+        f.write(audio_value.getbuffer())
+    
+    with open("temp_recording.wav", "rb") as audio_file:
+        transcript = client.audio.transcriptions.create(
+            model = "whisper-1",
+            file = audio_file
+        )
+
+        query_text = transcript.text
+
+        result_speech = asyncio.run(voice_agent_builder(query_text))
+
+    speech_response = client.audio.speech.create(
+        model = "gpt-4o-mini-tts",
+        voice = "nova",
+        input = result_speech,
+        instructions = """You are a helpful stock market assistant that is supposed to calmly explain {input} to the user"""
+    )
+
+    audio_bytes = speech_response.content
+
+    st.audio(audio_bytes, format = "audio/mp3")
+
+
+
+        
 
 # Footer
 st.divider()

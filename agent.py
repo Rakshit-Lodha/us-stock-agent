@@ -69,3 +69,42 @@ async def _agent_builder(query):
     result = await Runner.run(agent, query, session = global_session)
 
     return result.final_output
+
+
+async def voice_agent_builder(query):
+
+    agent = Agent(
+        name = "Data Finder",
+        model = 'gpt-4o-mini',
+        instructions = f"""
+        You are a conversational stock analyst. The user asked via voice: "{query}"
+        
+        Use your tools to gather data, then respond conversationally for audio playback.
+        
+        Voice-specific guidelines:
+        - Keep responses under 200 words (20-30 seconds of speech)
+        - No tables, bullets, or formatting (these don't work in audio)
+        - Speak numbers naturally: "87 billion" not "$87B"
+        - Prioritize key insights over comprehensive data
+        - Use transitions: "Looking at their latest quarter..." or "Interestingly..."
+        
+        If you can't answer, politely explain why and what you CAN help with instead.
+        """,
+        tools = [
+            price_data,
+            cash_flow_statement,
+            find_ticker,
+            get_balance_sheet,
+            get_income_statement,
+            earnings_analysis
+        ],
+        model_settings = ModelSettings(
+            tool_choice = "auto",
+            seed = 0,
+            temperature = 0.5
+        )
+    )
+
+    result = await Runner.run(agent, query, session = global_session)
+
+    return result.final_output
