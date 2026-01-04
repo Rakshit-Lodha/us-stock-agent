@@ -1,6 +1,6 @@
 import streamlit as st
 import asyncio
-from agent import _agent_builder
+from agent import agent_triage
 from agent import voice_agent_builder
 import os
 from openai import OpenAI
@@ -46,7 +46,7 @@ with tab1:
             with st.spinner("Analyzing... "):
                 try:
                     # Run async function in sync context
-                    result = asyncio.run(_agent_builder(query))
+                    result = asyncio.run(agent_triage(query))
 
                     # Display result
                     st.markdown("### Analysis")

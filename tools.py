@@ -434,15 +434,18 @@ def _earnings_analysis(ticker: str) -> str:
 
     final_quarter = []
 
-    while final_transcript == []:
-        today = datetime.now()
-    
+    today = datetime.now()
+
+    transcript = None
+
+    while  transcript is None or transcript == []:
+
         year = today.year
-        month = today.month
     
+        month = today.month
+        
         if month in [1,2,3]:
             quarter = 'Q4'
-            year -= 1
         elif month in [4,5,6]:
             quarter = 'Q1'
         elif month in [7,8,9]:
@@ -463,13 +466,19 @@ def _earnings_analysis(ticker: str) -> str:
 
         final_json = response.json()
 
+        time.sleep(1)
+
         transcript = final_json.get('transcript')
 
-        quarter = final_json.get('quarter')
+        returned_quarter = final_json.get('quarter')
 
-        final_transcript.append(transcript)
+        if transcript != []:
+            final_transcript = transcript
+            final_quarter = returned_quarter
+            break
 
-        final_quarter.append(quarter)
+        today = today - timedelta(days = 30)
+        
 
     
     response = client.chat.completions.create(
@@ -479,10 +488,10 @@ def _earnings_analysis(ticker: str) -> str:
            You will be given the full earnings call transcript in {final_transcript}.
 
             Your task is to extract **7–10 investor-relevant insights** strictly based on what 
-            **Apple management said** in the transcript.
+            the management said in the transcript.
             
             Rules you MUST follow:
-            1. Use ONLY information explicitly stated by Apple executives (CEO, CFO, or Investor Relations).  
+            1. Use ONLY information explicitly stated by executives (CEO, CFO, or Investor Relations).  
                Do NOT include analyst opinions, assumptions, or external interpretation.
             2. Each point must represent a **distinct insight**, not a restatement of another point.
             3. For every point, clearly mention **who said it** (name + role).
