@@ -137,7 +137,7 @@ async def agent_triage(query):
     )
 
 
-    result = await Runner.run(triage_agent, query)
+    result = await Runner.run(triage_agent, query, session = global_session)
 
     return result.final_output
 
@@ -177,4 +177,5 @@ async def voice_agent_builder(query):
 
     result = await Runner.run(agent, query, session = global_session)
 
-    return result.final_output
+
+    # return result.final_output
