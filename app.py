@@ -117,4 +117,4 @@ with tab2:
 st.divider()
 st.caption("⚠️ **Disclaimer:** This is AI-generated analysis for educational purposes only, not financial advice.")
 st.caption("💡 **Tip:** Be specific with your questions for better results")
-st.caption("🔧 **Built with:** OpenAI GPT-4.1, Alpha Vantage API, Streamlit")
+st.caption("🔧 **Built with:** OpenAI GPT-4o-Mini, Alpha Vantage API, Streamlit")

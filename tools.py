@@ -6,9 +6,14 @@ from datetime import datetime, timedelta
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import finnhub
+import time
 load_dotenv()
 client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
 
+FINNHUB_API_KEY = os.getenv("FINNHUB_API_KEY")
+
+finnhub_client = finnhub.Client(api_key = FINNHUB_API_KEY)
 
 # API setup
 stock_api = os.getenv("ALPHA_VANTAGE_API_KEY")
@@ -519,3 +524,57 @@ def _earnings_analysis(ticker: str) -> str:
     )
 
     return response.choices[0].message.content
+
+
+@function_tool
+def valuation_of_peers(ticker: str) -> str:
+    """ 
+    Based on the ticker, this function will give you various valuation metrics of peers along with the company.
+    """
+
+    return _valuation_of_peers(ticker)
+
+@lru_cache
+def _valuation_of_peers(ticker: str) -> str:
+    """ 
+    Based on the ticker, this function will give you various valuation metrics of peers along with the company.
+    """
+
+    peers = finnhub_client.company_peers(ticker)
+
+    top_peers = peers[:4]
+
+    top_peers_data = []
+
+    for peer in top_peers:
+        params = {
+            "function": "OVERVIEW",
+            "symbol": peer,
+            "apikey": stock_api
+        }
+    
+        response = requests.get(url, params)
+    
+        data = response.json()
+        
+        filtered_data = {
+            'Name': data.get('Name'),
+            'Symbol': data.get('Symbol'),
+            'MarketCapitalization': data.get('MarketCapitalization'),
+            'PERatio': data.get('PERatio'),
+            'PEGRatio': data.get('PEGRatio'),
+            'PriceToSalesRatioTTM': data.get('PriceToSalesRatioTTM'),
+            'PriceToBookRatio': data.get('PriceToBookRatio'),
+            'EVToRevenue': data.get('EVToRevenue'),
+            'EVToEBITDA': data.get('EVToEBITDA'),
+            # 'Sector': data.get('Sector'),
+            'Industry': data.get('Industry')
+        }
+
+        top_peers_data.append(filtered_data)
+
+        time.sleep(1)
+
+    return top_peers_data
+
+

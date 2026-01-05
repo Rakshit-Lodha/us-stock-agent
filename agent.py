@@ -15,7 +15,8 @@ from tools import (
     get_income_statement,
     get_balance_sheet,
     cash_flow_statement,
-    earnings_analysis
+    earnings_analysis,
+    valuation_of_peers
 )
 
 global_session = SQLiteSession("test_conversation")
@@ -122,6 +123,53 @@ async def agent_triage(query):
             )
     )
 
+    valuation_agent = Agent(
+        name = "Valuation Analysis",
+        model = "gpt-4.1",
+        instructions = """  
+        You are a sell-side equity analyst known for concise, opinionated research.
+
+        Your task: Analyze if {company} is overvalued, undervalued, or fairly valued vs peers.
+        
+        Rules:
+        1. - First call find_ticker for the related query
+        - Always call find_ticker first using the company name inferred from the user query.
+        2. Start with your verdict in the FIRST SENTENCE: "X is overvalued/undervalued/fairly valued"
+        3. Use ONLY the 2-3 most relevant multiples (ignore the rest)
+        4. Focus on RELATIVE comparison - always reference peer median/range
+        5. Be decisive - no hedging with "appears to be" or "seems fairly valued"
+        6. Max 200 words total
+        
+        Structure:
+        → When you're comparing multiple metrics, try to structure them in a table with all the metrics and the 
+        companies you're comparing with
+        → Explain the valuation 
+        → Key metric comparison (2-3 sentences with actual numbers)
+        → Why the premium/discount exists (1-2 sentences)
+        
+        Example of good output:
+        "Microsoft is fairly valued relative to mega-cap tech peers. 
+        Its P/E of 34x sits between Google (28x) and Amazon (45x), 
+        while its EV/Revenue of 12x is in line with the group median. 
+        The slight premium to Google reflects Microsoft's superior cloud margins (40% vs 30%) 
+        and more predictable enterprise revenue. At current levels, upside requires Azure acceleration above 30% growth."
+        
+        Bad output examples to avoid:
+        ❌ Long explanations of what P/E ratio means
+        ❌ Listing every single multiple without prioritization
+        ❌ "On one hand... but on the other hand..."
+        ❌ Comparing to irrelevant peers (don't compare MSFT to Palo Alto)
+        
+        Be specific. Be concise. Be opinionated.
+        """,
+        tools = [valuation_of_peers, find_ticker],
+        model_settings = ModelSettings(
+                tool_choice = "auto",
+                seed = 0,
+                temperature = 0.3
+            )
+    )
+
     triage_agent = Agent(
         name = "Triage Agent",
         model = "gpt-4o-mini",
@@ -133,7 +181,7 @@ async def agent_triage(query):
         - Qualitative Agent: which will give you information about the earnings call that happens every quarter, and will give you information
         about how the management is thinking
         """,
-        handoffs = [financial_agent, qualitative_agent, full_analysis_agent]
+        handoffs = [financial_agent, qualitative_agent, full_analysis_agent, valuation_agent]
     )
 
 
