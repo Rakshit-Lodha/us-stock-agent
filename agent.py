@@ -125,7 +125,7 @@ async def agent_triage(query):
 
     valuation_agent = Agent(
         name = "Valuation Analysis",
-        model = "gpt-4.1",
+        model = "gpt-4o-mini",
         instructions = """  
         You are a sell-side equity analyst known for concise, opinionated research.
 
