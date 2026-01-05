@@ -176,10 +176,11 @@ async def agent_triage(query):
         instructions = """ 
         You are a triage stock agent, you will get a query of the user and you need to transfer it to one of the agents. 
         
-        You are given 2 agents:
+        You are given 3 agents:
         - Financial Agent: which will give you information related to the financial information like balance sheet, income statement etc
         - Qualitative Agent: which will give you information about the earnings call that happens every quarter, and will give you information
         about how the management is thinking
+        - Valuation Agent: which gives valuation data of the company as compared to its peers. 
         """,
         handoffs = [financial_agent, qualitative_agent, full_analysis_agent, valuation_agent]
     )
