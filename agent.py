@@ -16,7 +16,8 @@ from tools import (
     get_balance_sheet,
     cash_flow_statement,
     earnings_analysis,
-    valuation_of_peers
+    valuation_of_peers,
+    general_company_info
 )
 
 global_session = SQLiteSession("test_conversation")
@@ -106,15 +107,14 @@ async def agent_triage(query):
 
         In case of comparison between 2 or more years, you can do it in a table format. And make sure you explain the data and not just 
         listing it as it is. 
-
-        
         """,
         tools = [
             cash_flow_statement,
             find_ticker,
             get_balance_sheet,
             get_income_statement,
-            earnings_analysis
+            earnings_analysis,
+            general_company_info
         ],
         model_settings = ModelSettings(
                 tool_choice = "auto",
@@ -129,7 +129,7 @@ async def agent_triage(query):
         instructions = """  
         You are a sell-side equity analyst known for concise, opinionated research.
 
-        Your task: Analyze if {company} is overvalued, undervalued, or fairly valued vs peers.
+        Your task: Analyze if company is overvalued, undervalued, or fairly valued vs peers.
         
         Rules:
         1. - First call find_ticker for the related query
@@ -170,19 +170,53 @@ async def agent_triage(query):
             )
     )
 
+
+    general_agent = Agent(
+        name = "General Agent",
+        model = "gpt-4o-mini",
+        instructions = """  
+        Based on the find_ticker tool you need to call the general_company_info, this will give you basic details about the company. The response would contain:
+        - Market Cap of the company
+        - Description of the company
+
+        Use this information and take relavant information from the response to generate an answer. 
+        """,
+        tools = [general_company_info, find_ticker],
+        model_settings = ModelSettings(
+                tool_choice = "auto",
+                seed = 0,
+                temperature = 0.3
+            )
+    )
+
+
+
     triage_agent = Agent(
         name = "Triage Agent",
         model = "gpt-4o-mini",
         instructions = """ 
         You are a triage stock agent, you will get a query of the user and you need to transfer it to one of the agents. 
         
-        You are given 3 agents:
+        You are given 4 agents:
         - Financial Agent: which will give you information related to the financial information like balance sheet, income statement etc
         - Qualitative Agent: which will give you information about the earnings call that happens every quarter, and will give you information
         about how the management is thinking
-        - Valuation Agent: which gives valuation data of the company as compared to its peers. 
+        - Valuation Agent: which gives valuation data of the company as compared to its peers. The metrics covered in this are things like:
+          1. P/E Ratio
+          2. EV/Revenue
+          3. MarketCapitalization
+          4. PEG Ratio
+          5. Price to sales
+          6. Price to Book etc
+
+          All of the above metrics are company specific metrics that are given only for specific companies
+        - General Agent: this gives general details about the company like description, market cap, symbol etc. You can use this agent to answer generic questions
+        about what the user is asking. 
+        
+        Based on the above criterias, you need to decide which queries you can answer and which queries you can't answer. If you can't answer any question
+        you need to refuse the user politely.
         """,
-        handoffs = [financial_agent, qualitative_agent, full_analysis_agent, valuation_agent]
+        handoffs = [financial_agent, qualitative_agent, full_analysis_agent, valuation_agent, general_agent]
     )
 
 

@@ -578,3 +578,36 @@ def _valuation_of_peers(ticker: str) -> str:
     return top_peers_data
 
 
+@function_tool
+def general_company_info(ticker: str) -> str:
+    """ 
+    Based on the ticker, this function will give you general information about the company.
+    """
+
+    return _general_company_info(ticker)
+
+@lru_cache
+def _general_company_info(ticker: str) -> str:
+    """ 
+    Based on the ticker, this function will give you general information about the company.
+    """
+    params = {
+        "function": "OVERVIEW",
+        "symbol": ticker,
+        "apikey": stock_api
+    }
+    
+    response = requests.get(url, params)
+    
+    data = response.json()
+        
+    filtered_data = {
+        'Name': data.get('Name'),
+        'Symbol': data.get('Symbol'),
+        'MarketCapitalization': data.get('MarketCapitalization'),
+        'Description': data.get('Description')
+        }
+
+    return filtered_data
+
+
