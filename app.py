@@ -96,7 +96,7 @@ with tab2:
                         voice = "nova",
                         input = result_speech,
                         instructions = """You are a helpful stock market assistant that is supposed to be VERY EXCITED
-                        when explaining the {input} to the user"""
+                        when explaining the answer to the user"""
                     )
 
                     speech_response.stream_to_file("response_audio.mp3")
