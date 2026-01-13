@@ -34,7 +34,7 @@ from tools import (
 
 global_session = SQLiteSession("test_conversation")
 
-creds = Credentials.from_service_account_file(
+creds = Credentials.from_service_account_info(
     st.secrets["gcp_service_account"],
     scopes = SCOPES
 )
