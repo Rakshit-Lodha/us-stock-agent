@@ -4,3 +4,7 @@ requests==2.32.3
 python-dotenv==1.1.0
 openai-agents==0.6.4
 finnhub-python
+google-auth>=2.23.0
+google-auth-oauthlib>=1.1.0
+google-auth-httplib2>=0.1.1
+google-api-python-client>=2.100.0

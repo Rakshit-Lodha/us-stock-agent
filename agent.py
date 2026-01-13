@@ -1,11 +1,23 @@
 import requests
+import streamlit as st
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
 load_dotenv()
 import os
 client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+from datetime import datetime, timedelta
 from agents import Agent, Runner, function_tool, ModelSettings, SQLiteSession, trace, RunConfig, handoff
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+from google.oauth2.service_account import Credentials
+from googleapiclient.errors import HttpError
+import ssl
+import time
+SERVICE_ACCOUNT_FILE = "/Users/Rakshit.Lodha/Downloads/useful-approach-484123-n8-fcf7d7c5d2b8.json" #check-this
+SHEET_ID = "16gxyyB3En4XdaTGvJTTXR6NVxa3m2dNjs-TOLcfaOpM"
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+
 
 from functools import lru_cache
 
@@ -22,8 +34,32 @@ from tools import (
 
 global_session = SQLiteSession("test_conversation")
 
+creds = Credentials.from_service_account_file(
+    st.secrets["gcp_service_account"],
+    scopes = SCOPES
+)
+
+sheets = build("sheets", "v4", credentials = creds)
+
+def log_event_to_sheet(sheets, SHEET_ID, event, user_query, latency_ms, cost_per_query, notes = ""):
+    ts = datetime.utcnow().isoformat()
+
+    row = [[ts, event, user_query, latency_ms, cost_per_query, notes]]
+    
+    result = sheets.spreadsheets().values().append(
+        spreadsheetId=SHEET_ID,
+        range = "events!A1",
+        valueInputOption = "USER_ENTERED",
+        insertDataOption = "INSERT_ROWS",
+        body = {"values":row}
+    ).execute()
+
+    return result
+
 
 async def agent_triage(query):
+
+    start_time = time.perf_counter()
 
     qualitative_agent = Agent(
         name = "Qualitative Agent",
@@ -221,6 +257,31 @@ async def agent_triage(query):
 
 
     result = await Runner.run(triage_agent, query, session = global_session)
+
+    total_input_tokens = 0
+    total_output_tokens = 0
+
+    for response in result.raw_responses:
+        total_input_tokens += response.usage.input_tokens
+        total_output_tokens += response.usage.output_tokens
+
+    total_cost = (total_input_tokens/1000000)*0.15 + (total_output_tokens/1000000)*0.6
+
+    end_time = time.perf_counter()
+
+    duration = (end_time-start_time)*1000
+
+    try:
+        log_event_to_sheet(
+            sheets=sheets, 
+            SHEET_ID = SHEET_ID, 
+            event = "query_done", 
+            user_query = query, 
+            latency_ms = duration,
+            cost_per_query = total_cost
+        )
+    except Exception as e:
+        print("Logging Failed")
 
     return result.final_output
 
