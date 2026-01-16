@@ -34,10 +34,16 @@ from tools import (
 
 global_session = SQLiteSession("test_conversation")
 
-creds = Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"],
+try:
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes = SCOPES
+    )
+except Exception as e:
+    creds = Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE,
     scopes = SCOPES
-)
+    )
 
 sheets = build("sheets", "v4", credentials = creds)
 

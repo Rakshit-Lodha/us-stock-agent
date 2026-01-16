@@ -5,6 +5,16 @@ from agent import voice_agent_builder
 import os
 from openai import OpenAI
 client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+from google.oauth2.service_account import Credentials
+from googleapiclient.errors import HttpError
+import ssl
+import time
+SERVICE_ACCOUNT_FILE = "/Users/Rakshit.Lodha/Downloads/useful-approach-484123-n8-fcf7d7c5d2b8.json" #check-this
+SHEET_ID = "16gxyyB3En4XdaTGvJTTXR6NVxa3m2dNjs-TOLcfaOpM"
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+import pandas as pd
 
 # Page config
 st.set_page_config(
@@ -20,7 +30,7 @@ Ask me anything about stocks! I'll analyze financial data including income state
 balance sheets, cash flow, and current prices to provide insights.
 """)
 
-tab1, tab2 = st.tabs(["Text Analysis", "Voice Analysis"])
+tab1, tab2, tab3 = st.tabs(["Text Analysis", "Voice Analysis", "Analytics"])
 
 with tab1:
 
@@ -109,6 +119,76 @@ with tab2:
                         audio_data = audio_file_1.read()
                         st.audio(audio_data, format = "audio/mpeg")
 
+with tab3:
+
+    try:
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"],
+            scopes = SCOPES
+        )
+    
+    except Exception as e:
+        creds = Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE,
+        scopes = SCOPES)
+        
+    sheets = build("sheets", "v4", credentials = creds)
+
+    latency = sheets.spreadsheets().values().get(
+        spreadsheetId=SHEET_ID,
+        range = "events!D2:D",
+        ).execute()
+
+    values = latency.get('values',)
+
+    latency_report = []
+
+    cleaned_latency = []
+
+    for latency_row in values:
+        latency_report.append(latency_row)
+
+    for row in latency_report:
+        if row:
+            num_str = row[0].replace(',', '')
+            cleaned_latency.append(float(num_str))
+
+    df = pd.Series(cleaned_latency)
+
+    average_latency = df.mean()
+    p95_latency = df.quantile(0.95)
+
+    st.markdown(f"Average Latency: {average_latency:.2f}")
+    st.markdown(f"P95 Latency: {p95_latency: .2f}")
+
+    st.markdown(f"------------")
+
+    cost = sheets.spreadsheets().values().get(
+        spreadsheetId=SHEET_ID,
+        range = "events!E2:E",
+        ).execute()
+    
+    values_1 = cost.get('values',)
+    
+    cost_report = []
+    
+    cleaned_cost = []
+
+    for cost_row in values_1:
+        cost_report.append(cost_row)
+
+    for row in cost_report:
+        if row:
+            num_str = row[0].replace(',', '')
+            cleaned_cost.append(float(num_str))
+
+    df = pd.Series(cleaned_cost)
+
+    average_cost = df.mean()
+    p95_cost = df.quantile(0.95)
+
+    st.markdown(f"Average Cost per query: ${average_cost: 4f}")
+    st.markdown(f"P95 Cost per query: ${p95_cost: 4f}")
 
 
         
